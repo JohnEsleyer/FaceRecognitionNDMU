@@ -1,10 +1,12 @@
-import tkinter as tk
-from PIL import ImageTk, Image 
-import cv2
-import face_recognition
-from datetime import datetime 
-import os
-import numpy as np
+
+import tkinter
+import PIL.Image, PIL.ImageTk
+import cv2 
+import face_recognition 
+import time 
+import os 
+from datetime import datetime
+import numpy as np 
 
 path = 'images'
 images = []
@@ -41,30 +43,103 @@ def markAttendance(name):
  
 encodeListKnown = findEncodings(images)
 print('Encoding Complete')
+
+
+#==================================
+class App:
+    def __init__(self, window, window_title, video_source=0):
+        self.window = window 
+        self.window.geometry("720x360") 
+        self.window.title(window_title)
+        self.video_source = video_source 
+        self.vid = MyVideoCapture(video_source)
+
+        self.frame = tkinter.Frame(
+            self.window, 
+            height=360)
+        self.frame.pack() 
+
+        self.centerFrame = tkinter.Frame(self.window)
+        self.centerFrame.pack() 
+
+
+        self.photo_image = PIL.ImageTk.PhotoImage(file="ndmu.png")
+        self.cv1 = tkinter.Canvas(
+            self.frame, 
+            width=self.photo_image.width(),
+            height=self.photo_image.height()
+        )
+
+        self.cv1.pack(side="bottom")
+
+        self.cv1.create_image(
+            0,
+            0,
+            image=self.photo_image,
+            anchor=tkinter.NW
+        )
+
+        self.regButton = tkinter.Button(
+            self.centerFrame,
+            text="Register Face",
+            width=30
+        )
+        self.regButton.pack()
+
+        self.detButton = tkinter.Button(
+            self.centerFrame,
+            text="Detect Face",
+            width=30,
+            command=self.detectFace
+        )
+        self.detButton.pack()
+
+
+
+        self.window.mainloop()
+
+    def detectFace(self):
+        print("detectFace")
+        for widgets in self.window.winfo_children():
+            widgets.destroy()
+        self.frame = tkinter.Frame(self.window).pack(side="top")
+        self.cv2 = tkinter.Canvas(
+            self.frame,
+            width=self.vid.width,
+            height=self.vid.height
+        )
+        self.cv2.pack()
+        self.delay = 15
+        self.update()
+
  
+    def snapshot(self):
+        #Get a frame from the video source
+        ret, frame = self.vid.get_frame()
+        if ret:
+            cv2.imwrite("frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+    
+    def update(self):
+        # Get a frame from the video source
+        ret, frame = self.vid.get_frame()
 
-# =========================================
+        if ret:
+            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
+            self.cv2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+        self.window.after(self.delay, self.update)
 
-
-
-window = tk.Tk()
-window.geometry("720x360")
-# window.configure(bg="green")
-frame = tk.Frame(window, height=360)
-frame.pack()
-centerFrame = tk.Frame(window)
-centerFrame.pack()
-bottomFrame = tk.Frame(window)
-bottomFrame.pack()
-
-cap = cv2.VideoCapture(0)
-delay = 15
-
-
-def detectFace():
-    print("detectFace")
-    while True:
-        success, img = cap.read()
+class MyVideoCapture:
+    def __init__(self, video_source=0):
+        # Open the video source
+        self.vid = cv2.VideoCapture(video_source)
+        if not self.vid.isOpened():
+            raise ValueError("Unable to open video source", video_source)
+        # Get video source width and height
+        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    
+    def get_frame(self):
+        success, img = self.vid.read()
         #img = captureScreen()
         imgS = cv2.resize(img,(0,0),None,0.25,0.25)
         imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
@@ -87,44 +162,19 @@ def detectFace():
                 cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
                 cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
                 markAttendance(name)
+        #=============================
+        if self.vid.isOpened():
+            ret, frame = self.vid.read()
+            if ret:
+                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            else:
+                return (ret, None)
+        else:
+            return (ret, None)
     
-        cv2.imshow('Webcam',img)
-        cv2.waitKey(1)
+    def __del__(self):
+        if self.vid.isOpened():
+            self.vid.release()
 
-    
-def regFace():
-    pass
-
-
-
-photo_image = ImageTk.PhotoImage(file="ndmu.png")
-cv1 = tk.Canvas(
-    frame,
-    width=photo_image.width(),
-    height=photo_image.height(),
-)
-cv1.pack(side="bottom")
-
-cv1.create_image(
-    0, 
-    0, 
-    image=photo_image, 
-    anchor=tk.NW
-    )
-
-redbutton = tk.Button(
-    centerFrame,
-    text="Register Face",
-    width=30,
-    )
-redbutton.pack()
-
-greenbutton = tk.Button(
-    centerFrame,
-    text="Detect Face",
-    width=30,
-    command=detectFace
-    )
-greenbutton.pack()
-
-window.mainloop()
+# Create a window and pass it to the Application object
+App(tkinter.Tk(), "Tkinter and OpenCV")
