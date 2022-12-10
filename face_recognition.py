@@ -9,7 +9,7 @@ from datetime import datetime
 import numpy as np 
 
 
-displayName = "Hello World"
+# displayName = "Hello World"
 
 path = 'images'
 images = []
@@ -120,10 +120,10 @@ class App:
         # Display name of face detected
         self.labelName = tkinter.Label(
             self.frame,
-            textvariable=self.text1
+            textvariable=self.text1,
+            font=("Helvetica", 30)
         ).pack()
 
-        self.text1.set(displayName)
 
         self.delay = 15
         self.update()
@@ -147,10 +147,25 @@ class App:
                 outline="green",
                 width=4
                 )
-        self.window.update()
+        self.text1.set(self.vid.getDisplayName())
+        #self.window.update()
+
+
+        # self.text1 = tkinter.StringVar()
+        # # Display name of face detected
+        # self.labelName = tkinter.Label(
+        #     self.frame,
+        #     textvariable=self.text1
+        # ).pack()
+
+        # self.text1.set(displayName)
+        print(self.vid.getDisplayName() + " foo")
         self.window.after(self.delay, self.update)
 
 class MyVideoCapture:
+    __myDisplayName = "Hello World"
+    
+    
     def __init__(self, video_source=0):
         # Open the video source
         self.vid = cv2.VideoCapture(video_source)
@@ -160,6 +175,7 @@ class MyVideoCapture:
         self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.y1, self.x2, self.y2, self.x1 = (0,0,0,0)
+
     def get_frame(self):
         success, img = self.vid.read()
         #img = captureScreen()
@@ -184,10 +200,9 @@ class MyVideoCapture:
                 # cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
                 # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
                 markAttendance(name)
-                displayName = name
-                print(displayName)
+                self.setDisplayName(name)
             else:
-                displayName = " "
+                self.setDisplayName(" ")
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
@@ -197,10 +212,17 @@ class MyVideoCapture:
                 return (ret, None)
         else:
             return (ret, None)
+
+    def setDisplayName(self, text):
+        self.__myDisplayName = text 
+    
+    def getDisplayName(self):
+        return self.__myDisplayName
+
     
     def __del__(self):
         if self.vid.isOpened():
             self.vid.release()
 
 # Create a window and pass it to the Application object
-App(tkinter.Tk(), "Tkinter and OpenCV")
+mainApp = App(tkinter.Tk(), "Tkinter and OpenCV")
