@@ -56,7 +56,7 @@ class App:
         self.window.title(window_title)
         self.video_source = video_source 
         self.vid = MyVideoCapture(video_source)
-
+        self.save_name = "None"
         self.frame = tkinter.Frame(
             self.window, 
             height=360)
@@ -107,21 +107,23 @@ class App:
             widgets.destroy()
         
         self.frame = tkinter.Frame(self.window).pack(side="top")
-        
-        # Display camera
-        self.cav2 = tkinter.Canvas(
-            self.frame,
-            width = self.vid.width,
-            height=self.vid.height
-        )
-        self.cav2.pack()
+        self.tmpCav1 = tkinter.Canvas(
+            self.frame, 
+            height=300,
+            width=1
+        ).pack()
+
+       
 
         self.text1 = tkinter.StringVar()
         self.labelName = tkinter.Label(
             self.frame,
             textvariable=self.text1,
             font=("Helvetica", 19)
-        ).pack()
+        )
+
+        self.labelName.pack()
+        
         self.text1.set("What is your name?")
 
         self.inputText1 = tkinter.Text(
@@ -129,12 +131,58 @@ class App:
             width=30,
             height=1,
             bg="light yellow"
+        )
+        self.inputText1.pack()
+
+        self.btn1 = tkinter.Button(
+            self.frame, 
+            width=30,
+            text="Next",
+            command=self.registerFace2
+        ).pack()
+
+     
+
+    def registerFace2(self):        
+        self.saveName()
+        for widgets in self.window.winfo_children():
+            widgets.destroy()
+        
+        self.frame = tkinter.Frame(self.window).pack(side="top")
+        
+        self.tmpCav1 = tkinter.Canvas(
+            self.frame, 
+            height=50,
+            width=1
+        ).pack()
+
+        
+        self.text1 = tkinter.StringVar()
+        self.labelName = tkinter.Label(
+            self.frame,
+            textvariable=self.text1,
+            font=("Helvetica", 19)
+        )
+
+        self.labelName.pack()
+        self.text1.set("Take a photo of yourself")
+
+         # Display camera
+        self.cav2 = tkinter.Canvas(
+            self.frame,
+            width = self.vid.width,
+            height=self.vid.height
+        )
+        self.cav2.pack()
+        self.btn1 = tkinter.Button(
+            self.frame, 
+            width=30,
+            text="Capture",
+            command=self.snapshot
         ).pack()
 
         self.delay = 15
         self.update2()
-
-        
 
     def detectFace(self):
         print("detectFace")
@@ -162,12 +210,15 @@ class App:
         self.delay = 15
         self.update()
 
- 
+    def saveName(self):
+        self.save_name = self.inputText1.get(1.0, "end-1c")
+        print(self.save_name)
+
     def snapshot(self):
         #Get a frame from the video source
         ret, frame = self.vid.get_frame()
         if ret:
-            cv2.imwrite("frame-" + time.strftime("%d-%m-%Y-%H-%M-%S") + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            cv2.imwrite("images/" + self.save_name + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     
     def update(self):
         # Get a frame from the video source
@@ -193,6 +244,8 @@ class App:
             self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
         print("I'm in update 2")
         self.window.after(self.delay, self.update2)
+
+
 
 class MyVideoCapture:
     __myDisplayName = ""
