@@ -8,6 +8,9 @@ import os
 from datetime import datetime
 import numpy as np 
 
+
+displayName = "Hello World"
+
 path = 'images'
 images = []
 classNames = []
@@ -103,12 +106,25 @@ class App:
         for widgets in self.window.winfo_children():
             widgets.destroy()
         self.frame = tkinter.Frame(self.window).pack(side="top")
-        self.cv2 = tkinter.Canvas(
+
+        # Display camera 
+        self.cav2 = tkinter.Canvas(
             self.frame,
             width=self.vid.width,
             height=self.vid.height
         )
-        self.cv2.pack()
+        self.cav2.pack()
+
+
+        self.text1 = tkinter.StringVar()
+        # Display name of face detected
+        self.labelName = tkinter.Label(
+            self.frame,
+            textvariable=self.text1
+        ).pack()
+
+        self.text1.set(displayName)
+
         self.delay = 15
         self.update()
 
@@ -122,10 +138,16 @@ class App:
     def update(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
-
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
-            self.cv2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+            self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+            self.cav2.create_rectangle(
+                self.vid.x1, self.vid.y1, 
+                self.vid.x2, self.vid.y2,
+                outline="green",
+                width=4
+                )
+        self.window.update()
         self.window.after(self.delay, self.update)
 
 class MyVideoCapture:
@@ -137,7 +159,7 @@ class MyVideoCapture:
         # Get video source width and height
         self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    
+        self.y1, self.x2, self.y2, self.x1 = (0,0,0,0)
     def get_frame(self):
         success, img = self.vid.read()
         #img = captureScreen()
@@ -156,12 +178,16 @@ class MyVideoCapture:
             if matches[matchIndex]:
                 name = classNames[matchIndex].upper()
                 #print(name)
-                y1,x2,y2,x1 = faceLoc
-                y1, x2, y2, x1 = y1*4,x2*4,y2*4,x1*4
-                cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
-                cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
-                cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
+                self.y1, self.x2, self.y2, self.x1 = faceLoc
+                self.y1, self.x2, self.y2, self.x1 = self.y1*4,self.x2*4,self.y2*4,self.x1*4
+                # cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
+                # cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
+                # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
                 markAttendance(name)
+                displayName = name
+                print(displayName)
+            else:
+                displayName = " "
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
