@@ -215,17 +215,17 @@ class App:
         print(self.save_name)
 
     def snapshot(self):
-        fullName = list(self.save_name)
-        temp = ""
-        for i in fullName:
+        temp = list(self.save_name)
+        self.fullName = ""
+        for i in temp:
             if i == " ":
                 i = "_"
-            temp += i
+            self.fullName += i
 
         #Get a frame from the video source
         ret, frame = self.vid.get_frame()
         if ret:
-            cv2.imwrite("images/" + temp + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            cv2.imwrite("images/" + self.fullName + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     
     def update(self):
         # Get a frame from the video source
@@ -294,8 +294,15 @@ class MyVideoCapture:
                 # cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
                 # cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
                 # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
-                markAttendance(name)
-                self.setDisplayName(name)
+                
+                newName = ""
+                for i in name:
+                    if i == "_":
+                        i = " "
+                    newName += i
+                
+                markAttendance(newName)
+                self.setDisplayName(newName)
             # else:
             #     self.setDisplayName(" ")
         #=============================
