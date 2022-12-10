@@ -85,7 +85,8 @@ class App:
         self.regButton = tkinter.Button(
             self.centerFrame,
             text="Register Face",
-            width=30
+            width=30,
+            command=self.registerFace
         )
         self.regButton.pack()
 
@@ -100,6 +101,40 @@ class App:
 
 
         self.window.mainloop()
+
+    def registerFace(self):
+        for widgets in self.window.winfo_children():
+            widgets.destroy()
+        
+        self.frame = tkinter.Frame(self.window).pack(side="top")
+        
+        # Display camera
+        self.cav2 = tkinter.Canvas(
+            self.frame,
+            width = self.vid.width,
+            height=self.vid.height
+        )
+        self.cav2.pack()
+
+        self.text1 = tkinter.StringVar()
+        self.labelName = tkinter.Label(
+            self.frame,
+            textvariable=self.text1,
+            font=("Helvetica", 19)
+        ).pack()
+        self.text1.set("What is your name?")
+
+        self.inputText1 = tkinter.Text(
+            self.frame,
+            width=30,
+            height=1,
+            bg="light yellow"
+        ).pack()
+
+        self.delay = 15
+        self.update2()
+
+        
 
     def detectFace(self):
         print("detectFace")
@@ -124,7 +159,6 @@ class App:
             font=("Helvetica", 30)
         ).pack()
 
-
         self.delay = 15
         self.update()
 
@@ -148,22 +182,20 @@ class App:
                 width=4
                 )
         self.text1.set(self.vid.getDisplayName())
-        #self.window.update()
-
-
-        # self.text1 = tkinter.StringVar()
-        # # Display name of face detected
-        # self.labelName = tkinter.Label(
-        #     self.frame,
-        #     textvariable=self.text1
-        # ).pack()
-
-        # self.text1.set(displayName)
-        print(self.vid.getDisplayName() + " foo")
+        print("I'm in update 1")
         self.window.after(self.delay, self.update)
 
+    def update2(self):
+         # Get a frame from the video source
+        ret, frame = self.vid.get_frame()
+        if ret:
+            self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
+            self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
+        print("I'm in update 2")
+        self.window.after(self.delay, self.update2)
+
 class MyVideoCapture:
-    __myDisplayName = "Hello World"
+    __myDisplayName = ""
     
     
     def __init__(self, video_source=0):
@@ -192,7 +224,10 @@ class MyVideoCapture:
             matchIndex = np.argmin(faceDis)
     
             if matches[matchIndex]:
-                name = classNames[matchIndex].upper()
+                name = classNames[matchIndex]
+                nameList = list(name)
+                nameList[0] = nameList[0].upper()
+                name = ''.join(nameList)
                 #print(name)
                 self.y1, self.x2, self.y2, self.x1 = faceLoc
                 self.y1, self.x2, self.y2, self.x1 = self.y1*4,self.x2*4,self.y2*4,self.x1*4
@@ -201,8 +236,8 @@ class MyVideoCapture:
                 # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
                 markAttendance(name)
                 self.setDisplayName(name)
-            else:
-                self.setDisplayName(" ")
+            # else:
+            #     self.setDisplayName(" ")
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
@@ -212,6 +247,44 @@ class MyVideoCapture:
                 return (ret, None)
         else:
             return (ret, None)
+
+
+    def get_frame2(self):
+        success, img = self.vid.read()
+        #img = captureScreen()
+        imgS = cv2.resize(img,(0,0),None,0.25,0.25)
+        imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
+    
+        facesCurFrame = face_recognition.face_locations(imgS)
+        encodesCurFrame = face_recognition.face_encodings(imgS,facesCurFrame)
+    
+        for encodeFace,faceLoc in zip(encodesCurFrame,facesCurFrame):
+            matches = face_recognition.compare_faces(encodeListKnown,encodeFace)
+            faceDis = face_recognition.face_distance(encodeListKnown,encodeFace)
+            #print(faceDis)
+            matchIndex = np.argmin(faceDis)
+    
+            if matches[matchIndex]:
+                name = classNames[matchIndex]
+                nameList = list(name)
+                nameList[0] = nameList[0].upper()
+                name = ''.join(nameList)
+                #print(name)
+                self.y1, self.x2, self.y2, self.x1 = faceLoc
+                self.y1, self.x2, self.y2, self.x1 = self.y1*4,self.x2*4,self.y2*4,self.x1*4
+                # cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
+                # cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
+                # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
+        #=============================
+        if self.vid.isOpened():
+            ret, frame = self.vid.read()
+            if ret:
+                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            else:
+                return (ret, None)
+        else:
+            return (ret, None)
+
 
     def setDisplayName(self, text):
         self.__myDisplayName = text 
