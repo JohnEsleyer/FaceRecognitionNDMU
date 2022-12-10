@@ -215,10 +215,17 @@ class App:
         print(self.save_name)
 
     def snapshot(self):
+        fullName = list(self.save_name)
+        temp = ""
+        for i in fullName:
+            if i == " ":
+                i = "_"
+            temp += i
+
         #Get a frame from the video source
         ret, frame = self.vid.get_frame()
         if ret:
-            cv2.imwrite("images/" + self.save_name + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+            cv2.imwrite("images/" + temp + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     
     def update(self):
         # Get a frame from the video source
@@ -233,7 +240,7 @@ class App:
                 width=4
                 )
         self.text1.set(self.vid.getDisplayName())
-        print("I'm in update 1")
+        # print("I'm in update 1")
         self.window.after(self.delay, self.update)
 
     def update2(self):
@@ -242,7 +249,7 @@ class App:
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
-        print("I'm in update 2")
+        # print("I'm in update 2")
         self.window.after(self.delay, self.update2)
 
 
