@@ -50,7 +50,7 @@ print('Encoding Complete')
 
 #==================================
 class App:
-    def __init__(self, window, window_title, video_source=0):
+    def __init__(self, window, window_title, video_source=1):
         self.window = window 
         self.window.geometry("720x360") 
         self.window.title(window_title)
@@ -60,10 +60,11 @@ class App:
         self.firstTime = True
         self.menuScreen()
         self.firstTime = False
-        self.window.mainloop()
+        #self.window.mainloop()
 
     
     def menuScreen(self):
+
         if not self.firstTime:
             for widgets in self.window.winfo_children():
                 widgets.destroy()
@@ -75,7 +76,6 @@ class App:
 
         self.centerFrame = tkinter.Frame(self.window)
         self.centerFrame.pack() 
-
 
         self.photo_image = PIL.ImageTk.PhotoImage(file="ndmu.png")
         self.cv1 = tkinter.Canvas(
@@ -108,6 +108,7 @@ class App:
             command=self.detectFace
         )
         self.detButton.pack()
+
     def registerFace(self):
         for widgets in self.window.winfo_children():
             widgets.destroy()
@@ -192,6 +193,7 @@ class App:
         self.update2()
 
     def detectFace(self):
+        print(classNames)
         print("detectFace")
         for widgets in self.window.winfo_children():
             widgets.destroy()
@@ -267,7 +269,7 @@ class App:
 
         self.labelName.pack()
         
-        self.text1.set("User Registered successfully")
+        self.text1.set("User Registered successfully \n You may need to to restart the system in \n order for the program to detect the new added face")
 
         self.btn1 = tkinter.Button(
             self.frame, 
@@ -276,7 +278,16 @@ class App:
             command=self.menuScreen,
         ).pack()
 
+        myList = os.listdir(path)
+        print(myList)
+        for cl in myList:
+            curImg = cv2.imread(f'{path}/{cl}')
+            images.append(curImg)
+            classNames.append(os.path.splitext(cl)[0])
+        print(classNames)
+
     def update(self):
+
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
         if ret:
@@ -324,7 +335,7 @@ class MyVideoCapture:
 
     def get_frame(self):
         self.setDisplayName("")
-        self.setSuccessText("No face detected or unkown face")
+        self.setSuccessText("No face detected or unknown face")
 
         success, img = self.vid.read()
         #img = captureScreen()
@@ -363,7 +374,7 @@ class MyVideoCapture:
                 self.setSuccessText("Login Successful")
             else:
                 self.setDisplayName(" ")
-                self.setSuccessText("No face detected or unkown face")
+                self.setSuccessText("No face detected or unknown face")
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
@@ -430,3 +441,4 @@ class MyVideoCapture:
 
 # Create a window and pass it to the Application object
 mainApp = App(tkinter.Tk(), "Tkinter and OpenCV")
+mainApp.window.mainloop()
