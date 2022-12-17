@@ -221,6 +221,13 @@ class App:
             font=("Helvetica", 19)
             ).pack()
 
+        self.btn1 = tkinter.Button(
+            self.frame, 
+            width=30,
+            text="Go back to main menu",
+            command=self.menuScreen,
+        ).pack()
+
         self.delay = 15
         self.update()
 
@@ -316,6 +323,9 @@ class MyVideoCapture:
         self.y1, self.x2, self.y2, self.x1 = (0,0,0,0)
 
     def get_frame(self):
+        self.setDisplayName("")
+        self.setSuccessText("No face detected or unkown face")
+
         success, img = self.vid.read()
         #img = captureScreen()
         imgS = cv2.resize(img,(0,0),None,0.25,0.25)
@@ -335,7 +345,7 @@ class MyVideoCapture:
                 nameList = list(name)
                 nameList[0] = nameList[0].upper()
                 name = ''.join(nameList)
-                #print(name)
+                print(name)
                 self.y1, self.x2, self.y2, self.x1 = faceLoc
                 self.y1, self.x2, self.y2, self.x1 = self.y1*4,self.x2*4,self.y2*4,self.x1*4
                 # cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
@@ -353,7 +363,7 @@ class MyVideoCapture:
                 self.setSuccessText("Login Successful")
             else:
                 self.setDisplayName(" ")
-                self.setSuccessText("No face detected")
+                self.setSuccessText("No face detected or unkown face")
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
