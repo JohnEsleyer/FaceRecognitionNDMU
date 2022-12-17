@@ -57,6 +57,17 @@ class App:
         self.video_source = video_source 
         self.vid = MyVideoCapture(video_source)
         self.save_name = "None"
+        self.firstTime = True
+        self.menuScreen()
+        self.firstTime = False
+        self.window.mainloop()
+
+    
+    def menuScreen(self):
+        if not self.firstTime:
+            for widgets in self.window.winfo_children():
+                widgets.destroy()
+
         self.frame = tkinter.Frame(
             self.window, 
             height=360)
@@ -97,11 +108,6 @@ class App:
             command=self.detectFace
         )
         self.detButton.pack()
-
-
-
-        self.window.mainloop()
-
     def registerFace(self):
         for widgets in self.window.winfo_children():
             widgets.destroy()
@@ -181,6 +187,7 @@ class App:
             command=self.snapshot
         ).pack()
 
+
         self.delay = 15
         self.update2()
 
@@ -207,6 +214,13 @@ class App:
             font=("Helvetica", 30)
         ).pack()
 
+        self.text2 = tkinter.StringVar()
+        self.labelName2 = tkinter.Label(
+            self.frame,
+            textvariable=self.text2,
+            font=("Helvetica", 19)
+            ).pack()
+
         self.delay = 15
         self.update()
 
@@ -221,12 +235,40 @@ class App:
             if i == " ":
                 i = "_"
             self.fullName += i
-
+        
         #Get a frame from the video source
         ret, frame = self.vid.get_frame()
         if ret:
             cv2.imwrite("images/" + self.fullName + ".jpg", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     
+        # Update screen
+        for widgets in self.window.winfo_children():
+            widgets.destroy()
+        self.frame = tkinter.Frame(self.window).pack()
+        
+        self.tmpCav1 = tkinter.Canvas(
+            self.frame, 
+            height=300
+        ).pack()
+
+        self.text1 = tkinter.StringVar()
+        self.labelName = tkinter.Label(
+            self.frame,
+            textvariable=self.text1,
+            font=("Helvetica", 19)
+        )
+
+        self.labelName.pack()
+        
+        self.text1.set("User Registered successfully")
+
+        self.btn1 = tkinter.Button(
+            self.frame, 
+            width=30,
+            text="Go back to main menu",
+            command=self.menuScreen,
+        ).pack()
+
     def update(self):
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
@@ -240,6 +282,11 @@ class App:
                 width=4
                 )
         self.text1.set(self.vid.getDisplayName())
+        self.text2.set(self.vid.getDisplaySuccess())
+
+
+
+
         # print("I'm in update 1")
         self.window.after(self.delay, self.update)
 
@@ -256,7 +303,7 @@ class App:
 
 class MyVideoCapture:
     __myDisplayName = ""
-    
+    __successText = ""
     
     def __init__(self, video_source=0):
         # Open the video source
@@ -303,8 +350,10 @@ class MyVideoCapture:
                 
                 markAttendance(newName)
                 self.setDisplayName(newName)
-            # else:
-            #     self.setDisplayName(" ")
+                self.setSuccessText("Login Successful")
+            else:
+                self.setDisplayName(" ")
+                self.setSuccessText("No face detected")
         #=============================
         if self.vid.isOpened():
             ret, frame = self.vid.read()
@@ -356,10 +405,15 @@ class MyVideoCapture:
     def setDisplayName(self, text):
         self.__myDisplayName = text 
     
+    def setSuccessText(self, text):
+        self.__successText = text
+    
     def getDisplayName(self):
         return self.__myDisplayName
 
-    
+    def getDisplaySuccess(self):
+        return self.__successText
+
     def __del__(self):
         if self.vid.isOpened():
             self.vid.release()
