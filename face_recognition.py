@@ -50,7 +50,7 @@ print('Encoding Complete')
 
 #==================================
 class App:
-    def __init__(self, window, window_title, video_source=1):
+    def __init__(self, window, window_title, video_source=0):
         self.window = window 
         self.window.geometry("720x360") 
         self.window.title(window_title)
@@ -290,6 +290,7 @@ class App:
 
         # Get a frame from the video source
         ret, frame = self.vid.get_frame()
+    
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
@@ -310,7 +311,8 @@ class App:
 
     def update2(self):
          # Get a frame from the video source
-        ret, frame = self.vid.get_frame()
+        ret, frame = self.vid.get_frame2()
+        self.isUpdate2 = True
         if ret:
             self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(frame))
             self.cav2.create_image(0, 0, image = self.photo, anchor = tkinter.NW)
@@ -332,6 +334,7 @@ class MyVideoCapture:
         self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.y1, self.x2, self.y2, self.x1 = (0,0,0,0)
+
 
     def get_frame(self):
         self.setDisplayName("")
@@ -362,7 +365,6 @@ class MyVideoCapture:
                 # cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
                 # cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)
                 # cv2.putText(img,name,(x1+6,y2-6),cv2.FONT_HERSHEY_COMPLEX,1,(255,255,255),2)
-                
                 newName = ""
                 for i in name:
                     if i == "_":
