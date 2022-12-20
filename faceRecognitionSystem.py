@@ -52,7 +52,7 @@ print('Encoding Complete')
 class App:
     def __init__(self, window, window_title, video_source=0):
         self.window = window 
-        self.window.geometry("720x360") 
+        self.window.geometry("720x800") 
         self.window.title(window_title)
         self.video_source = video_source 
         self.vid = MyVideoCapture(video_source)
@@ -83,8 +83,8 @@ class App:
             width=self.photo_image.width(),
             height=self.photo_image.height()
         )
-
         self.cv1.pack(side="bottom")
+
 
         self.cv1.create_image(
             0,
@@ -93,6 +93,17 @@ class App:
             anchor=tkinter.NW
         )
 
+                
+        self.text1 = tkinter.StringVar()
+        self.labelName = tkinter.Label(
+            self.centerFrame,
+            textvariable=self.text1,
+            font=("Helvetica", 19)
+        )
+
+        self.labelName.pack()
+        self.text1.set("NDMU Face Recognition System")
+        
         self.regButton = tkinter.Button(
             self.centerFrame,
             text="Register Face",
